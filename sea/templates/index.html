@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wildcam Log: Sea</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    h1 { color: #1d5a8c; }
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 2rem; }
+    label { display: flex; flex-direction: column; font-size: .85rem; gap: .25rem; }
+    .full { grid-column: 1 / -1; }
+    input, textarea, button { font: inherit; padding: .4rem; }
+    button { cursor: pointer; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: .4rem; border-bottom: 1px solid #ddd; }
+    footer { margin-top: 2rem; font-size: .75rem; color: #777; }
+  </style>
+</head>
+<body>
+  <h1>Wildcam Log: Sea</h1>
+
+  <form method="post">
+    <label>Stream
+      <input name="stream" required placeholder="e.g. Monterey Bay Kelp Cam">
+    </label>
+    <label>Animal
+      <input name="animal" required placeholder="e.g. Sea otter">
+    </label>
+    <label>Depth (m)
+      <input type="number" name="depth_m" step="0.1" min="0" placeholder="optional">
+    </label>
+    <label>Seen at
+      <input type="datetime-local" name="seen_at" value="{{ now }}">
+    </label>
+    <label class="full">Notes
+      <input name="notes" placeholder="optional">
+    </label>
+    <button class="full" type="submit">Log sighting</button>
+  </form>
+
+  <h2>All sightings ({{ sightings|length }})</h2>
+  <table>
+    <thead><tr><th>Seen at</th><th>Stream</th><th>Animal</th><th>Depth</th><th>Notes</th><th></th></tr></thead>
+    <tbody>
+    {% for s in sightings %}
+      <tr>
+        <td>{{ s.seen_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        <td>{{ s.stream }}</td>
+        <td>{{ s.animal }}</td>
+        <td>{% if s.depth_m is not none %}{{ "%.1f"|format(s.depth_m) }} m{% endif %}</td>
+        <td>{{ s.notes }}</td>
+        <td><form method="post" action="{{ url_for('delete', sighting_id=s.id) }}" style="display:block;margin:0">
+          <button type="submit" title="Delete">✕</button></form></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6">No sightings yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <footer>
+    {% if peer_url %}<a href="{{ peer_url }}">Land &amp; air animals log</a> · {% endif %}
+    sea app, served by {{ host }}
+  </footer>
+</body>
+</html>
